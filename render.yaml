@@ -14,6 +14,12 @@ services:
         value: "1541653103982419988"
       - key: HONEY_CHANNEL_ID
         value: "1544393321420558489"
+      - key: WELCOME_CHANNEL_ID
+        value: "1544393317179981854"
+      - key: BAN_LOGS_CHANNEL_ID
+        value: "1549553360099737712"
+      - key: NEW_GAME_CHANNEL_ID
+        value: "1545031053742448700"
       - key: ONLINE_CHANNEL_ID
         value: "1544396402958925937"
       - key: HUMANS_CHANNEL_ID
