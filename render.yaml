@@ -3,9 +3,11 @@ services:
     name: baan-hub-bot
     env: node
     plan: free
-    buildCommand: ""
+    buildCommand: "npm install"
     startCommand: "node index.js"
     envVars:
+      - key: NODE_VERSION
+        value: "22.12.0"
       - key: PORT
         value: 10000
       - key: BAAN_BOT_TOKEN

@@ -1,6 +1,17 @@
 // Baan Hub Discord Bot - 24/7 Member Counter, Welcome System & Honeypot Ban Logs
 const http = require('http');
 
+let WSClient;
+if (typeof globalThis.WebSocket !== 'undefined') {
+    WSClient = globalThis.WebSocket;
+} else {
+    try {
+        WSClient = require('ws');
+    } catch (e) {
+        console.error('[FATAL] WebSocket library not found:', e.message);
+    }
+}
+
 const TOKEN = process.env.BAAN_BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID || "1541653103982419988";
 const HONEY_CHANNEL_ID = process.env.HONEY_CHANNEL_ID || "1544393321420558489";
@@ -17,6 +28,9 @@ if (!TOKEN) {
 }
 
 let botUserId = null;
+let botUsername = null;
+let gatewayStatus = 'disconnected';
+let lastGatewayError = null;
 let heartbeatTimer = null;
 let lastSequence = null;
 let ws = null;
@@ -34,6 +48,9 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
         status: 'online',
         botConnected: botUserId !== null,
+        botUsername: botUsername,
+        gatewayStatus: gatewayStatus,
+        lastGatewayError: lastGatewayError,
         lastUpdate: lastUpdate ? new Date(lastUpdate).toISOString() : 'pending',
         timestamp: new Date().toISOString()
     }));
@@ -234,7 +251,7 @@ async function handleHoneypot(msg) {
 // 5. Discord Gateway WebSocket Connection
 function connectGateway() {
     console.log("[Gateway] Connecting to Discord Gateway...");
-    ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
+    ws = new WSClient("wss://gateway.discord.gg/?v=10&encoding=json");
 
     ws.onopen = () => {
         console.log("[Gateway] WebSocket connected.");
@@ -272,6 +289,9 @@ function connectGateway() {
             if (op === 0) {
                 if (t === "READY") {
                     botUserId = d.user.id;
+                    botUsername = d.user.username;
+                    gatewayStatus = 'connected';
+                    lastGatewayError = null;
                     console.log(`========================================`);
                     console.log(`🤖 Baan Hub Bot is ONLINE! Logged in as: ${d.user.username}#${d.user.discriminator || '0'} (${botUserId})`);
                     console.log(`🍯 Honeypot active on: ${HONEY_CHANNEL_ID}`);
@@ -291,6 +311,7 @@ function connectGateway() {
             }
         } catch (e) {
             console.error("[Gateway] Message parse error:", e);
+            lastGatewayError = e.message;
         }
     };
 
@@ -302,6 +323,8 @@ function connectGateway() {
 
     ws.onerror = (err) => {
         console.error("[Gateway] WebSocket error:", err.message || err);
+        lastGatewayError = String(err.message || err);
+        gatewayStatus = 'error';
     };
 }
 
