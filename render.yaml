@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: baan-hub-bot
+    env: node
+    plan: free
+    buildCommand: ""
+    startCommand: "node index.js"
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: BAAN_BOT_TOKEN
+        sync: false
+      - key: GUILD_ID
+        value: "1541653103982419988"
+      - key: HONEY_CHANNEL_ID
+        value: "1544393321420558489"
+      - key: ONLINE_CHANNEL_ID
+        value: "1544396402958925937"
+      - key: HUMANS_CHANNEL_ID
+        value: "1544396405257412659"
